@@ -29,8 +29,9 @@ After deployments you will just need to make appropiate HTTP requests to endpoin
 Methods and properties required for endpoint management 
 ### Create 
 Creates new endpoint in specificed `application platform`
+
 |  Path | sns/endpoint/create  |
-|---|---|---|---|---|
+|---|---|
 |  Method | POST  | 
 
 ```json
@@ -43,8 +44,9 @@ Creates new endpoint in specificed `application platform`
 
 ### Delete
 Deletes specific endpoint
+
 |  Path | sns/endpoint/delete  |
-|---|---|---|---|---|
+|---|---|
 |  Method | DELETE  | 
 
 ```json
@@ -55,6 +57,7 @@ Deletes specific endpoint
 
 ### List
 Lists all endpoints in specified `application platform`
+
 |  Path | sns/endpoint/list  |
 |---|---|
 |  Method | POST  | 
