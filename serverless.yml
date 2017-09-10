@@ -62,6 +62,14 @@ functions:
 
 resources:
   Resources:
+    pathmapping:
+      Type: AWS::ApiGateway::BasePathMapping
+      Properties:
+          BasePath: oauth2
+          DomainName: ${self:vars.domainName}
+          RestApiId: 
+              Ref: ApiGatewayRestApi
+          Stage: ${self:vars.stage}  
     # PetsModelNoFlatten: 
     #   Type: "AWS::ApiGateway::Model"
     #   Properties: 
