@@ -1,31 +1,16 @@
 'use strict';
 
 const uuid = require('uuid');
-const AWS = require('aws-sdk'); // eslint-disable-line import/no-extraneous-dependencies
 
-var sns = new AWS.SNS({
-	apiVersion: '2010-03-31',
-	region: 'eu-west-1'
-});
-
-function isDef(v) {
-  return v !== undefined && v !== null;
-} 
 
 
 module.exports.create = (event, context, callback) => {
-  var timestamp = new Date().getTime();
   const uniqueId  = uuid.v1();
 
   console.log(`[CreatePlatformEndpoint] [${timestamp}] [${uniqueId}][Info] Starting execution`);
+
+
   
-      var responseCode = 400;
-      var responseBody = "";
-  
-      var response = {
-        statusCode: responseCode,
-        body:       responseBody
-      };
 
       if ( !isDef(event.body) )
         { 
