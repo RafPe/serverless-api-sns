@@ -80,7 +80,7 @@ Lists all endpoints in specified `application platform`
 ### Example of error response 
 ```json
 {
-    "action": "CreatePlatformEndpoint",
+    "component": "sns",
     "status": "error",
     "error": {
         "code": "EC.002",
@@ -91,6 +91,10 @@ Lists all endpoints in specified `application platform`
 }
 ```
 
+## Testing 
+```
+mocha sns/tests/create.test.js --compilers js:babel-core/register
+```
 
 ## TODOs 
 * endpoint.metadata
