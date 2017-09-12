@@ -2,15 +2,13 @@
 
 const uuid = require('uuid');
 
-
-
 module.exports.create = (event, context, callback) => {
   const uniqueId  = uuid.v1();
 
   console.log(`[CreatePlatformEndpoint] [${timestamp}] [${uniqueId}][Info] Starting execution`);
 
 
-  
+
 
       if ( !isDef(event.body) )
         { 

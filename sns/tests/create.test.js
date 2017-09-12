@@ -61,17 +61,16 @@ describe('xSnsEndpointManager', function() {
 
                 })
 
-                it('should return default error values', function(done){
+                it('should return default error values', function(){
 
                     var xSnsEndpointMgr = new xSnsEndpointManager('1234');
 
                     let res = xSnsEndpointMgr.createPlatformEndpoint('123','123');
-                    done();
+
                     console.log(res)
 
-                    expect(res.statusCode).to.equal(200);
+                    expect(res.statusCode).to.equal(500);
                     expect(res.body).to.equal('{"component":"e","status":"error","error":"e"}');
-                    
                 });
 
                 after(function () {
