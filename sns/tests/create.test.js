@@ -49,6 +49,10 @@ describe('xSharedFunctions', function() {
 
 });
 
+
+// Response from create
+// {"component":"sns","status":"success","data":{"ResponseMetadata":{"RequestId":"efdb1199-f10e-5b0b-bff9-43addbda438b"},"EndpointArn":"arn:aws:sns:eu-west-1:171435972641:endpoint/APNS_SANDBOX/Development-ninja.rafpe.pushtest01/c08d3ccd-3e07-328c-a77d-20b2a790122f"}}
+
 describe('xSnsEndpointManager', function() {
     
         describe('#createPlatformEndpoint()', function() {

@@ -1,54 +1,47 @@
 'use strict';
 
-const uuid = require('uuid');
-const AWS = require('aws-sdk'); // eslint-disable-line import/no-extraneous-dependencies
+var xSharedFunctions = require('../xRes/shared/xSharedFunctions');
+var xSnsEndpointManager = require('../xRes/xSnsEndpointManager');
 
-var sns = new AWS.SNS({
-	apiVersion: '2010-03-31',
-	region: 'eu-west-1'
-});
 
-function isDef(v) {
-  return v !== undefined && v !== null;
-} 
+const uuid      = require('uuid');
+const component  = 'sns'
+
+var xSharedFnc = new xSharedFunctions('sns');
 
 module.exports.list = (event, context, callback) => {
-  var timestamp = new Date().getTime();
-  const uniqueId  = uuid.v1();
+  const uniqueId      = uuid.v1();
+  var xSnsEndpointMgr = new xSnsEndpointManager(uniqueId,callback);
 
-  console.log(`[ListPlatformEndpoints] [${timestamp}] [${uniqueId}][Info] Starting execution`);
-  
-      var responseCode = 400;
-      var responseBody = "";
-  
-      var response = {
-        statusCode: responseCode,
-        body:       responseBody
-      };
+  xSharedFnc.logmsg(uniqueId,'info','Starting execution');
+  xSharedFnc.logmsg(uniqueId,'info',`${JSON.stringify(event)}`);
+ 
+  if ( !xSharedFnc.isDef(event.body) )
+    { 
+      xSharedFnc.logmsg(uniqueId,'error','Missing body information (EC.001)');
 
-      if ( !isDef(event.body) )
-        { 
-
-          console.log(`[ListPlatformEndpoints] [${timestamp}] [${uniqueId}][Error] Missing body information (EC.001)`);
-
-          let errorData = {
-            code: "EC.001",
-            data: {
-              message: "Missing body"
-            }
-          }
-
-          response.body = {
-            action:  "ListPlatformEndpoints",
-            status:  "error",
-            error:   errorData,
-          }
-
-          response.body = JSON.stringify(response.body)
-
-          callback(null,response); 
-
+      let errorData = {
+        code: "EC.001",
+        data: {
+          message: "Missing body"
         }
+      }
+
+      callback(null,xSharedFnc.generateErrorResponse(errorData)); 
+
+    }
+
+  var jsonBody = JSON.parse(event.body);
+  
+  
+  
+  xSharedFnc.logmsg(uniqueId,'info','All required parameters received');
+  xSharedFnc.logmsg(uniqueId,'info','Calling createPlatformEndpoint...');
+
+
+  xSnsEndpointMgr.createPlatformEndpoint(jsonBody.platformApplicationArn, jsonBody.deviceToken);          
+  
+
 
       var jsonBody = JSON.parse(event.body);
 

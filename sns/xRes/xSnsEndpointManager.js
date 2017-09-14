@@ -3,17 +3,17 @@ var xSharedFunctions = require('./shared/xSharedFunctions');
 
 const AWS = require('aws-sdk'); // eslint-disable-line import/no-extraneous-dependencies
 
-var xSharedFnc = new xSharedFunctions()
 
 class xSnsEndpointManager {  
     
-    constructor(uuid,logEnabled){
+    constructor(uuid,callback,disableLog){
+              
+        this.callback   = callback;
+        this.component  = 'sns';
+        this.disableLog = (disableLog != true ) ? null : disableLog ;
+        this.xSharedFnc = new xSharedFunctions(this.component,this.disableLog);  
+        this.uuid       = uuid;
 
-
-
-        this.component = 'sns';
-        this.uuid      = uuid;
-        this.logEnabled = logEnabled
 
         this.sns = new AWS.SNS({
             apiVersion: '2010-03-31',
@@ -25,42 +25,47 @@ class xSnsEndpointManager {
   createPlatformEndpoint(applicationArn, deviceToken, deviceMetadata){
     var that = this; 
 
-    // let component  = this.component;
-    // let uuid       = this.uuid;
-    // let sns        = this.sns;
-    // let logEnabled = this.logEnabled
     let res        = null;
 
-    return that.sns.createPlatformEndpoint({
+    let params = {
         PlatformApplicationArn: applicationArn,
-        Token: deviceToken
-        }, function(err, data) {
+        Token:                  deviceToken
+        } 
+
+    that.sns.createPlatformEndpoint(params,function(err, data) {
             if (err) {
-  
-                xSharedFnc.logmsg(that.component,that.uuid,'error','Failed to create platform endpoint (EC.003)',that.logEnabled);
-                xSharedFnc.logmsg(that.component,that.uuid,'error',`${JSON.stringify(err)}`,that.logEnabled);
+
+                that.xSharedFnc.logmsg(that.uuid,'error','Failed to create platform endpoint (EC.003)');
+                that.xSharedFnc.logmsg(that.uuid,'error',`${JSON.stringify(err)}`);
 
                 let errorData = {
                     code: "EC.003",
                     data: err
                 }
 
-                res = xSharedFnc.generateErrorResponse(errorData,that.component);
+                res = that.xSharedFnc.generateErrorResponse(errorData);
+
+                that.callback(null,res);
+
+                return;
 
             } else {
 
-                xSharedFnc.logmsg(that.component,that.uuid,'info','Created platform endpoint',that.logEnabled);
-                xSharedFnc.logmsg(that.component,that.uuid,'info',`${JSON.stringify(data)}`,that.logEnabled);
+                that.xSharedFnc.logmsg(that.uuid,'info','Created platform endpoint');
+                that.xSharedFnc.logmsg(that.uuid,'info',`${JSON.stringify(data)}`);
 
 
-                res = xSharedFnc.generateSuccessResponse(data,that.component,201);
+                res = that.xSharedFnc.generateSuccessResponse(data,201);
 
-                xSharedFnc.logmsg(that.component,that.uuid,'info',`${JSON.stringify(res)}`,that.logEnabled);
+                that.xSharedFnc.logmsg(that.uuid,'info',`${JSON.stringify(res)}`);
 
+                that.callback(null,res);
+                
+                return;
                 
             }              
         }
-    ).promise();
+    );
 
 
 

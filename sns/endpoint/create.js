@@ -3,25 +3,22 @@
 var xSharedFunctions = require('../xRes/shared/xSharedFunctions');
 var xSnsEndpointManager = require('../xRes/xSnsEndpointManager');
 
-var xSharedFnc = new xSharedFunctions()
-
 
 const uuid      = require('uuid');
 const component  = 'sns'
-const logEnabled = true;
+
+var xSharedFnc = new xSharedFunctions('sns');
 
 module.exports.create = (event, context, callback) => {
-  const uniqueId   = uuid.v1();
+  const uniqueId      = uuid.v1();
+  var xSnsEndpointMgr = new xSnsEndpointManager(uniqueId,callback);
 
-
-  var xSnsEndpointMgr = new xSnsEndpointManager(uniqueId,logEnabled);
-
-  xSharedFnc.logmsg(component,uniqueId,'info','Starting execution',logEnabled);
-  xSharedFnc.logmsg(component,uniqueId,'info',`${JSON.stringify(event)}`,logEnabled);
+  xSharedFnc.logmsg(uniqueId,'info','Starting execution');
+  xSharedFnc.logmsg(uniqueId,'info',`${JSON.stringify(event)}`);
  
   if ( !xSharedFnc.isDef(event.body) )
     { 
-      xSharedFnc.logmsg(component,uniqueId,'error','Missing body information (EC.001)',logEnabled);
+      xSharedFnc.logmsg(uniqueId,'error','Missing body information (EC.001)');
 
       let errorData = {
         code: "EC.001",
@@ -30,7 +27,7 @@ module.exports.create = (event, context, callback) => {
         }
       }
 
-      callback(null,xSharedFnc.generateErrorResponse(errorData,component)); 
+      callback(null,xSharedFnc.generateErrorResponse(errorData)); 
 
     }
 
@@ -39,10 +36,11 @@ module.exports.create = (event, context, callback) => {
 
 
 
-  xSharedFnc.logmsg(component,uniqueId,'info','All required parameters received',logEnabled);
-  xSharedFnc.logmsg(component,uniqueId,'info','Calling createPlatformEndpoint...',logEnabled);
+  xSharedFnc.logmsg(uniqueId,'info','All required parameters received');
+  xSharedFnc.logmsg(uniqueId,'info','Calling createPlatformEndpoint...');
 
-  callback(null, xSnsEndpointMgr.createPlatformEndpoint(jsonBody.platformApplicationArn, jsonBody.deviceToken) )
+
+  xSnsEndpointMgr.createPlatformEndpoint(jsonBody.platformApplicationArn, jsonBody.deviceToken);          
   
 }
 
