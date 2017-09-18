@@ -1,127 +1,55 @@
 'use strict';
 
-const uuid = require('uuid');
-const AWS = require('aws-sdk'); // eslint-disable-line import/no-extraneous-dependencies
+var xSharedFunctions = require('../xRes/shared/xSharedFunctions');
+var xSnsEndpointManager = require('../xRes/xSnsEndpointManager');
 
-var sns = new AWS.SNS({
-	apiVersion: '2010-03-31',
-	region: 'eu-west-1'
-});
 
-function isDef(v) {
-  return v !== undefined && v !== null;
-} 
+const uuid      = require('uuid');
+const component  = 'sns'
+
+var xSharedFnc = new xSharedFunctions('sns');
 
 module.exports.delete = (event, context, callback) => {
-  var timestamp = new Date().getTime();
-  const uniqueId  = uuid.v1();
+  const uniqueId      = uuid.v1();
+  var xSnsEndpointMgr = new xSnsEndpointManager(uniqueId,callback);
 
-  console.log(`[DeletePlatformEndpoint] [${timestamp}] [${uniqueId}][Info] Starting execution`);
-  
-      var responseCode = 400;
-      var responseBody = "";
-  
-      var response = {
-        statusCode: responseCode,
-        body:       responseBody
-      };
+  if ( !xSharedFnc.isDef(event.body) )
+    { 
+      xSharedFnc.logmsg(uniqueId,'error','Missing body information (EC.001)');
 
-      if ( !isDef(event.body) )
-        { 
+      let errorData = {
+        code: "EC.001",
+        data: {
+          message: "Missing body"
+        }
+      }
 
-          console.log(`[DeletePlatformEndpoint] [${timestamp}] [${uniqueId}][Error] Missing body information (EC.001)`);
+      callback(null,xSharedFnc.generateErrorResponse(errorData)); 
 
-          let errorData = {
-            code: "EC.001",
-            data: {
-              message: "Missing body"
-            }
+    }
+
+    var jsonBody = JSON.parse(event.body);
+
+    xSharedFnc.logmsg(uniqueId,'info','Parsed json body');
+
+    if ( !xSharedFnc.isDef(jsonBody.endpointArn) )
+      {
+        xSharedFnc.logmsg(uniqueId,'error','Missing required parameters in body (EC.002)');
+        
+        let errorData = {
+          code: "EC.002",
+          data: {
+            message: "Missing required parameters in body"
           }
-
-          response.body = {
-            action:  "DeletePlatformEndpoint",
-            status:  "error",
-            error:   errorData,
-          }
-
-          response.body = JSON.stringify(response.body)
-
-          callback(null,response); 
-
         }
 
-      var jsonBody = JSON.parse(event.body);
+        callback(null,xSharedFnc.generateErrorResponse(errorData)); 
+      }
 
-      console.log(`[DeletePlatformEndpoint] [${timestamp}] [${uniqueId}][Info] Parsed body from request`);
+    xSharedFnc.logmsg(uniqueId,'info','All required parameters received');
+    xSharedFnc.logmsg(uniqueId,'info','Calling deletePlatformEndpoint...');
 
-      if ( !isDef(jsonBody.endpointArn) )
-        {
-
-          console.log(`[DeletePlatformEndpoint] [${timestamp}] [${uniqueId}][Error] Missing required parameters in body (EC.002)`);
-          
-          let errorData = {
-            code: "EC.002",
-            data: {
-              message: "Missing required parameters in body"
-            }
-          }
-
-          response.body = {
-            action:  "DeletePlatformEndpoint",
-            status:  "error",
-            error:   errorData,
-          }
-
-          callback(null,response); 
-        }
-
-        console.log(`[DeletePlatformEndpoint] [${timestamp}] [${uniqueId}][Info] All required parameters received`);
-        console.log(`[DeletePlatformEndpoint] [${timestamp}] [${uniqueId}][Info] Calling DeletePlatformEndpoint...`);
-
-
-        var params = {
-          endpointArn: jsonBody.endpointArn /* required */
-        };
-
-
-        sns.deleteEndpoint(params, function(err, data) {
-                if (err) {
-                  console.log(`[DeletePlatformEndpoint] [${timestamp}] [${uniqueId}][Error] Failed to delete platform endpoint (EC.004)`);
-                  console.log(`[DeletePlatformEndpoint] [${timestamp}] [${uniqueId}][Error] ${JSON.stringify(err)}`);
-
-                  let errorData = {
-                    code: "EC.004",
-                    data: err
-                  }
-
-                  response.body = {
-                    action:  "DeletePlatformEndpoint",
-                    status:  "error",
-                    error:   errorData,
-                  }
-
-                  response.body = JSON.stringify(response.body)
-
-                  callback(null,response); 
-  
-                  } else {
-
-                    console.log(`[DeletePlatformEndpoint] [${timestamp}] [${uniqueId}][Info] Deleted platform endpoint`);
-                    console.log(`[DeletePlatformEndpoint] [${timestamp}] [${uniqueId}][Info] ${JSON.stringify(data)}`);
-
-                    response.body = {
-                      action:  "DeletePlatformEndpoint",
-                      status:  "success",
-                      message: 'Endpoint deleted!',
-                      data: data
-                    }
-
-                    response.body = JSON.stringify(response.body)
-
-                    response.statusCode = 200;
-                    callback(null,response); 
-                  }              
-                }
-        );
+    xSnsEndpointMgr.deletePlatformEndpoint(jsonBody.endpointArn)
+        
 }
 

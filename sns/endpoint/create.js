@@ -34,13 +34,25 @@ module.exports.create = (event, context, callback) => {
 
   var jsonBody = JSON.parse(event.body);
 
+  if ( !xSharedFnc.isDef(jsonBody.deviceToken) )
+  {
+    xSharedFnc.logmsg(uniqueId,'error','Missing required parameters in body (EC.002)');
+    
+    let errorData = {
+      code: "EC.002",
+      data: {
+        message: "Missing required parameters in body"
+      }
+    }
 
+    callback(null,xSharedFnc.generateErrorResponse(errorData)); 
+  }
 
   xSharedFnc.logmsg(uniqueId,'info','All required parameters received');
   xSharedFnc.logmsg(uniqueId,'info','Calling createPlatformEndpoint...');
 
 
-  xSnsEndpointMgr.createPlatformEndpoint(jsonBody.platformApplicationArn, jsonBody.deviceToken);          
+  xSnsEndpointMgr.createPlatformEndpoint(jsonBody.deviceToken);          
   
 }
 

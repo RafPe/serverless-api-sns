@@ -1,21 +1,8 @@
-# Welcome to Serverless!
-#
-# This file is the main config file for your service.
-# It's very minimal at this point and uses default values.
-# You can always add more config options for more control.
-# We've included some commented out config examples here.
-# Just uncomment any of them to get that config option.
-#
-# For full config options, check the docs:
-#    docs.serverless.com
-#
-# Happy Coding!
-
 service: api
 
-# You can pin your service to only deploy with a specific Serverless version
-# Check out our docs for more details
-# frameworkVersion: "=X.X.X"
+custom: 
+  region: 'eu-west-1'
+  stage: 'dev'
 
 provider:
   name: aws
@@ -24,11 +11,9 @@ provider:
     - myApiKey  
   runtime: nodejs6.10
   region: eu-west-1  
-
-
-stage: dev
-
-
+  environment:
+    REGION: ${self:provider.region} 
+    PLATFORM_APP_ARN: ${file(./serverless.env.yml):${self:custom.stage}.PLATFORM_APP_ARN}
 
 functions:
   create:
@@ -55,10 +40,11 @@ functions:
     events:
       - http:
           path: endpoint/list
-          method: post
-          cors: true
-          private: true
-
+          method: get
+          cors: true          
+          authorizer:
+            name: authorizer
+            arn: ${file(./serverless.env.yml):${self:custom.stage}.COGNITO_POOL_ARN}
 
 resources:
   Resources:
@@ -113,6 +99,8 @@ resources:
                 - Effect: Allow # note that these rights are given in the default policy and are required if you want logs out of your lambda(s)
                   Action:
                     - sns:CreatePlatformEndpoint
+                    - sns:ListEndpointsByPlatformApplication
+                    - sns:DeleteEndpoint
                   Resource: arn:aws:sns:*:*:*           
                 - Effect: "Allow"
                   Action:

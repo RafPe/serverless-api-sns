@@ -11,3 +11,8 @@ lambda
 # Serverless directories
 .serverless
 sns/xRes/shared
+
+serverless.env.yml
+
+# Do not push .env files
+.env

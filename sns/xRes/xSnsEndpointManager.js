@@ -10,8 +10,8 @@ class xSnsEndpointManager {
               
         this.callback   = callback;
         this.component  = 'sns';
-        this.disableLog = (disableLog != true ) ? null : disableLog ;
-        this.xSharedFnc = new xSharedFunctions(this.component,this.disableLog);  
+
+        this.xSharedFnc = new xSharedFunctions(this.component,null,(disableLog === null || disableLog === undefined ) ? null : disableLog);  
         this.uuid       = uuid;
 
 
@@ -20,15 +20,17 @@ class xSnsEndpointManager {
             region: process.env.REGION
         });
 
+        this.pAppArn = process.env.PLATFORM_APP_ARN;
+
     }
     
-  createPlatformEndpoint(applicationArn, deviceToken, deviceMetadata){
+  createPlatformEndpoint(deviceToken, deviceMetadata,funcCallback){
     var that = this; 
 
     let res        = null;
 
     let params = {
-        PlatformApplicationArn: applicationArn,
+        PlatformApplicationArn: that.pAppArn,
         Token:                  deviceToken
         } 
 
@@ -43,11 +45,13 @@ class xSnsEndpointManager {
                     data: err
                 }
 
-                res = that.xSharedFnc.generateErrorResponse(errorData);
+                res = that.xSharedFnc.generateErrorResponse(errorData,errorData.data.statusCode);
 
                 that.callback(null,res);
 
-                return;
+                //funcCallback(res)
+
+                return res;
 
             } else {
 
@@ -61,7 +65,9 @@ class xSnsEndpointManager {
 
                 that.callback(null,res);
                 
-                return;
+                //funcCallback(res)
+
+                return res;
                 
             }              
         }
@@ -71,7 +77,95 @@ class xSnsEndpointManager {
 
   }
 
+  listPlatformEndpoints(){
+    var that = this; 
+    let res  = null;
 
+    var params = {
+        PlatformApplicationArn: that.pAppArn, /* required */
+        NextToken: ''
+      };
+
+    let allEndpoints = [];
+
+    that.sns.listEndpointsByPlatformApplication(params).eachPage(function(err, data) {
+            if(err) {
+                that.xSharedFnc.logmsg(that.uuid,'error','Failed to list platform endpoints (EC.005)');
+                that.xSharedFnc.logmsg(that.uuid,'error',`${JSON.stringify(err)}`);
+
+                let errorData = {
+                    code: "EC.005",
+                    data: err
+                }
+
+                res = that.xSharedFnc.generateErrorResponse(errorData,errorData.data.statusCode);
+
+                that.callback(null,res);
+
+                return;
+            }
+            if(data) {
+                allEndpoints.push.apply(allEndpoints,data.Endpoints)
+            }
+            if(data === null){                    
+
+                that.xSharedFnc.logmsg(that.uuid,'info','Listed platform endpoints');
+
+                res = that.xSharedFnc.generateSuccessResponse(allEndpoints);
+
+                that.xSharedFnc.logmsg(that.uuid,'info',`${JSON.stringify(res)}`);
+
+                that.callback(null,res);
+
+            }
+        }
+    )
+  }
+
+  deletePlatformEndpoint(endpointArn){
+    var that = this; 
+    let res  = null;
+
+    var params = {
+        EndpointArn: endpointArn /* required */
+      };
+
+    that.sns.deleteEndpoint(params, function(err, data) {
+        if (err) {
+           
+            that.xSharedFnc.logmsg(that.uuid,'error','Failed to delete platform endpoint (EC.004)');
+            that.xSharedFnc.logmsg(that.uuid,'error',`${JSON.stringify(err)}`);
+
+
+            let errorData = {
+                code: "EC.004",
+                data: err
+            }
+
+            res = that.xSharedFnc.generateErrorResponse(errorData,errorData.data.statusCode);
+            
+            that.callback(null,res);
+
+            return;
+
+          } else {
+
+            that.xSharedFnc.logmsg(that.uuid,'info','Deleted platform endpoint');
+            that.xSharedFnc.logmsg(that.uuid,'info',`${JSON.stringify(data)}`);
+
+
+            res = that.xSharedFnc.generateSuccessResponse(data,200);
+
+            that.xSharedFnc.logmsg(that.uuid,'info',`${JSON.stringify(res)}`);
+
+            that.callback(null,res);
+            
+            return;
+
+          }              
+        }
+);
+  }
 }
   
 module.exports = xSnsEndpointManager;
