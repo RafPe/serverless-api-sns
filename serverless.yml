@@ -29,11 +29,15 @@ functions:
     handler: sns/endpoint/delete.delete
     events:
       - http:
-          path: endpoint/delete
           method: delete
           cors: true
           private: true
-
+          path: endpoint/delete
+          # path: endpoint/delete/{id}
+          # request: 
+          #   parameters: 
+          #     paths: 
+          #       id: true
 
   list:
     handler: sns/endpoint/list.list
