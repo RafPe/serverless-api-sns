@@ -49,8 +49,6 @@ class xSnsEndpointManager {
 
                 that.callback(null,res);
 
-                //funcCallback(res)
-
                 return res;
 
             } else {
@@ -63,9 +61,7 @@ class xSnsEndpointManager {
 
                 that.xSharedFnc.logmsg(that.uuid,'info',`${JSON.stringify(res)}`);
 
-                that.callback(null,res);
-                
-                //funcCallback(res)
+                that.callback(null,res);            
 
                 return res;
                 
